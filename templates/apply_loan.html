@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for Loan - Credit Risk Engine{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Apply for Loan</h1>
+        <p>Fill in the details below to submit your loan application</p>
+    </div>
+
+    <div class="application-form-container">
+        <form method="POST" action="{{ url_for('apply_loan') }}" id="loanApplicationForm" class="loan-form">
+            
+            <!-- Loan Type Selection -->
+            <div class="form-section">
+                <h3 class="section-title">Loan Type</h3>
+                <div class="form-group">
+                    <label for="loan_type">Select Loan Type *</label>
+                    <select id="loan_type" name="loan_type" required class="form-control" onchange="updateFormFields()">
+                        <option value="">-- Select Loan Type --</option>
+                        {% for loan_type in loan_types %}
+                        <option value="{{ loan_type }}">{{ loan_type }} Loan</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Common Fields Section -->
+            <div class="form-section">
+                <h3 class="section-title">Personal Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age">Age *</label>
+                        <input type="number" id="age" name="age" required class="form-control" min="18" max="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gender">Gender *</label>
+                        <select id="gender" name="gender" required class="form-control">
+                            <option value="">-- Select --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="city_type">City Type *</label>
+                        <select id="city_type" name="city_type" required class="form-control">
+                            <option value="">-- Select --</option>
+                            <option value="Metro">Metro</option>
+                            <option value="Urban">Urban</option>
+                            <option value="Semi-Urban">Semi-Urban</option>
+                            <option value="Rural">Rural</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="education_level">Education Level *</label>
+                        <select id="education_level" name="education_level" required class="form-control">
+                            <option value="">-- Select --</option>
+                            <option value="Graduate">Graduate</option>
+                            <option value="Post-Graduate">Post-Graduate</option>
+                            <option value="Professional">Professional</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dependents">Number of Dependents *</label>
+                        <input type="number" id="dependents" name="dependents" required class="form-control" min="0" max="10" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment Information -->
+            <div class="form-section">
+                <h3 class="section-title">Employment Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="employment_type">Employment Type *</label>
+                        <select id="employment_type" name="employment_type" required class="form-control">
+                            <option value="">-- Select --</option>
+                            <option value="Salaried">Salaried</option>
+                            <option value="Self-Employed">Self-Employed</option>
+                            <option value="Student">Student</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="employment_years">Employment Years *</label>
+                        <input type="number" id="employment_years" name="employment_years" required class="form-control" min="0" max="50" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="business_vintage_years">Business Vintage Years *</label>
+                        <input type="number" id="business_vintage_years" name="business_vintage_years" required class="form-control" min="0" max="50" value="0">
+                        <small>Enter 0 if not applicable</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Information -->
+            <div class="form-section">
+                <h3 class="section-title">Financial Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="annual_income">Annual Income (₹) *</label>
+                        <input type="number" id="annual_income" name="annual_income" required class="form-control" min="0" step="1000" onchange="calculateMonthlyIncome()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="monthly_income">Monthly Income (₹) *</label>
+                        <input type="number" id="monthly_income" name="monthly_income" required class="form-control" min="0" step="100" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="credit_score">Credit Score *</label>
+                        <input type="number" id="credit_score" name="credit_score" required class="form-control" min="300" max="900">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cibil_score">CIBIL Score *</label>
+                        <input type="number" id="cibil_score" name="cibil_score" required class="form-control" min="300" max="900">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loan Details -->
+            <div class="form-section">
+                <h3 class="section-title">Loan Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="requested_loan_amount">Requested Loan Amount (₹) *</label>
+                        <input type="number" id="requested_loan_amount" name="requested_loan_amount" required class="form-control" min="10000" step="1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loan_tenure_months">Loan Tenure (Months) *</label>
+                        <input type="number" id="loan_tenure_months" name="loan_tenure_months" required class="form-control" min="6" max="360">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interest_rate">Interest Rate (%) *</label>
+                        <input type="number" id="interest_rate" name="interest_rate" required class="form-control" min="1" max="30" step="0.01" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Loan-Type Specific Fields -->
+            <div id="dynamicFieldsSection" style="display: none;">
+                <!-- Home Loan Fields -->
+                <div id="homeFields" class="form-section dynamic-section" style="display: none;">
+                    <h3 class="section-title">Home Loan Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="property_value">Property Value (₹) *</label>
+                            <input type="number" id="property_value" name="property_value" class="form-control dynamic-field" min="100000">
+                        </div>
+                        <div class="form-group">
+                            <label for="property_location">Property Location *</label>
+                            <select id="property_location" name="property_location" class="form-control dynamic-field">
+                                <option value="">-- Select --</option>
+                                <option value="Metro">Metro</option>
+                                <option value="Urban">Urban</option>
+                                <option value="Semi-Urban">Semi-Urban</option>
+                                <option value="Rural">Rural</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="down_payment">Down Payment (₹) *</label>
+                            <input type="number" id="down_payment" name="down_payment" class="form-control dynamic-field" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="property_type">Property Type *</label>
+                            <select id="property_type" name="property_type" class="form-control dynamic-field">
+                                <option value="">-- Select --</option>
+                                <option value="Apartment">Apartment</option>
+                                <option value="Villa">Villa</option>
+                                <option value="Independent House">Independent House</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gold Loan Fields -->
+                <div id="goldFields" class="form-section dynamic-section" style="display: none;">
+                    <h3 class="section-title">Gold Loan Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="gold_weight">Gold Weight (grams) *</label>
+                            <input type="number" id="gold_weight" name="gold_weight" class="form-control dynamic-field" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="gold_purity">Gold Purity (karats) *</label>
+                            <input type="number" id="gold_purity" name="gold_purity" class="form-control dynamic-field" min="10" max="24">
+                        </div>
+                        <div class="form-group">
+                            <label for="gold_market_value">Gold Market Value (₹) *</label>
+                            <input type="number" id="gold_market_value" name="gold_market_value" class="form-control dynamic-field" min="1000">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Loan Fields -->
+                <div id="businessFields" class="form-section dynamic-section" style="display: none;">
+                    <h3 class="section-title">Business Loan Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="business_turnover">Business Turnover (₹) *</label>
+                            <input type="number" id="business_turnover" name="business_turnover" class="form-control dynamic-field" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="years_in_business">Years in Business *</label>
+                            <input type="number" id="years_in_business" name="years_in_business" class="form-control dynamic-field" min="0" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="business_type">Business Type *</label>
+                            <select id="business_type" name="business_type" class="form-control dynamic-field">
+                                <option value="">-- Select --</option>
+                                <option value="Manufacturing">Manufacturing</option>
+                                <option value="Retail">Retail</option>
+                                <option value="IT Services">IT Services</option>
+                                <option value="Trading">Trading</option>
+                                <option value="Services">Services</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="gst_number">GST Number *</label>
+                            <input type="text" id="gst_number" name="gst_number" class="form-control dynamic-field" placeholder="GST123456">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Educational Loan Fields -->
+                <div id="educationalFields" class="form-section dynamic-section" style="display: none;">
+                    <h3 class="section-title">Educational Loan Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="course_fee">Course Fee (₹) *</label>
+                            <input type="number" id="course_fee" name="course_fee" class="form-control dynamic-field" min="10000">
+                        </div>
+                        <div class="form-group">
+                            <label for="college">College Tier *</label>
+                            <select id="college" name="college" class="form-control dynamic-field">
+                                <option value="">-- Select --</option>
+                                <option value="Tier1">Tier 1</option>
+                                <option value="Tier2">Tier 2</option>
+                                <option value="Tier3">Tier 3</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="course_duration">Course Duration (Months) *</label>
+                            <input type="number" id="course_duration" name="course_duration" class="form-control dynamic-field" min="6" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="coapplicant_income">Co-applicant Income (₹) *</label>
+                            <input type="number" id="coapplicant_income" name="coapplicant_income" class="form-control dynamic-field" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large">Submit Application</button>
+                <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary btn-large">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Default interest rates
+    const defaultRates = {{ default_rates|tojson }};
+
+    function updateFormFields() {
+        const loanType = document.getElementById('loan_type').value;
+        const dynamicSection = document.getElementById('dynamicFieldsSection');
+        const allDynamicSections = document.querySelectorAll('.dynamic-section');
+        const allDynamicFields = document.querySelectorAll('.dynamic-field');
+        
+        // Hide all dynamic sections and disable their fields
+        allDynamicSections.forEach(section => {
+            section.style.display = 'none';
+        });
+        allDynamicFields.forEach(field => {
+            field.removeAttribute('required');
+            field.disabled = true;
+        });
+        
+        if (loanType) {
+            dynamicSection.style.display = 'block';
+            
+            // Show relevant section and enable its fields
+            const sectionId = loanType.toLowerCase() + 'Fields';
+            const section = document.getElementById(sectionId);
+            
+            if (section) {
+                section.style.display = 'block';
+                const fields = section.querySelectorAll('.dynamic-field');
+                fields.forEach(field => {
+                    field.setAttribute('required', 'required');
+                    field.disabled = false;
+                });
+            }
+            
+            // Update interest rate
+            const interestRateField = document.getElementById('interest_rate');
+            if (defaultRates[loanType]) {
+                interestRateField.value = defaultRates[loanType];
+            }
+        } else {
+            dynamicSection.style.display = 'none';
+        }
+    }
+
+    function calculateMonthlyIncome() {
+        const annualIncome = parseFloat(document.getElementById('annual_income').value);
+        if (annualIncome > 0) {
+            const monthlyIncome = Math.round(annualIncome / 12);
+            document.getElementById('monthly_income').value = monthlyIncome;
+        }
+    }
+</script>
+{% endblock %}

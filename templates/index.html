@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Credit Risk Engine{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Enterprise Level Credit Risk Engine</h1>
+            <p style="font-family: Cambria, 'Times New Roman', serif;font-size: 30px;" class="hero-subtitle">Credits: Developed by Hameem and Team</p>
+            <ul style="display:inline;margin-right: 15px;list-style-type: circle;">
+                <li style="display:inline-block;margin-right: 15px ;font-family: 'Times New Roman', Times, serif;font-size: 25px;">@Syed Hameem</li>
+                <li style="display:inline-block;margin-right: 15px ;font-family: 'Times New Roman', Times, serif;font-size: 25px;">@Ponnarasu</li>
+                <li style="display:inline-block;margin-right: 15px ;font-family: 'Times New Roman', Times, serif;font-size: 25px;">@Josevan Roy</li>
+                <li style="display:inline-block;margin-right: 15px ;font-family: 'Times New Roman', Times, serif;font-size: 25px;">@Shanoje</li>
+
+            </ul><br><br>
+            
+            <p class="hero-subtitle">AI-Powered Loan Assessment with Explainable Predictions</p>
+            <p class="hero-description">
+                Our advanced machine learning system evaluates loan applications using LightGBM models
+                and provides transparent, explainable decisions through SHAP analysis.
+            </p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('user_login') }}" class="btn btn-primary btn-large">Apply for Loan</a>
+                <a href="{{ url_for('admin_login') }}" class="btn btn-secondary btn-large">Admin Access</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <h2 class="section-title">Our Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered Assessment</h3>
+                <p>Advanced LightGBM models trained on thousands of loan applications for accurate predictions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Explainable AI</h3>
+                <p>SHAP analysis provides clear explanations for every decision, ensuring transparency</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Instant Results</h3>
+                <p>Get approval decisions, default probability, and safe loan amounts in seconds</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏠</div>
+                <h3>Multiple Loan Types</h3>
+                <p>Support for Home, Educational, Gold, and Business loans with type-specific analysis</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Comprehensive Reports</h3>
+                <p>Download detailed PDF reports with visualizations and recommendations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure & Private</h3>
+                <p>Your data is encrypted and stored securely with strict access controls</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loan-types-section">
+    <div class="container">
+        <h2 class="section-title">Supported Loan Types</h2>
+        <div class="loan-types-grid">
+            <div class="loan-type-card">
+                <h3>🏠 Home Loan</h3>
+                <p>Comprehensive assessment based on property value, location, and down payment</p>
+                <ul>
+                    <li>Competitive interest rates</li>
+                    <li>Long tenure options</li>
+                    <li>Property-specific analysis</li>
+                </ul>
+            </div>
+            <div class="loan-type-card">
+                <h3>📚 Educational Loan</h3>
+                <p>Support for higher education with co-applicant income consideration</p>
+                <ul>
+                    <li>Course fee coverage</li>
+                    <li>Institution-based assessment</li>
+                    <li>Flexible repayment</li>
+                </ul>
+            </div>
+            <div class="loan-type-card">
+                <h3>💰 Gold Loan</h3>
+                <p>Quick loans against gold assets with market value evaluation</p>
+                <ul>
+                    <li>Fast approval process</li>
+                    <li>Based on gold purity</li>
+                    <li>Minimal documentation</li>
+                </ul>
+            </div>
+            <div class="loan-type-card">
+                <h3>💼 Business Loan</h3>
+                <p>Working capital and growth loans based on business performance</p>
+                <ul>
+                    <li>Turnover-based limits</li>
+                    <li>GST verified</li>
+                    <li>Business type analysis</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <div class="container">
+        <h2>Ready to Get Started?</h2>
+        <p>Apply for a loan today and get instant AI-powered assessment</p>
+        <a href="{{ url_for('user_login') }}" class="btn btn-primary btn-large">Get Started Now</a>
+    </div>
+</div>
+{% endblock %}

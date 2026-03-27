@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Results - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .prediction-result-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .shap-plot-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin: 20px 0;
+    }
+    
+    .shap-plot-container img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+    
+    .feature-impact-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .feature-impact-item {
+        padding: 10px;
+        margin: 5px 0;
+        border-left: 4px solid;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .feature-impact-item.positive {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+    
+    .feature-impact-item.negative {
+        border-color: #dc3545;
+        background: #f8d7da;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prediction-result-container">
+    <div class="page-header">
+        <h1>🎯 Prediction Results</h1>
+        <p>Application ID: <code>{{ application_id }}</code></p>
+        <p>Applicant: <strong>{{ application.username }}</strong> | Loan Type: <strong>{{ application.loan_type }}</strong></p>
+    </div>
+
+    <!-- Main Prediction Results -->
+    <div class="prediction-summary">
+        {% if prediction.approval_status == 'Approved' %}
+        <div class="result-card result-approved">
+            <div class="result-icon">✅</div>
+            <h2>LOAN APPROVED</h2>
+        </div>
+        {% else %}
+        <div class="result-card result-rejected">
+            <div class="result-icon">❌</div>
+            <h2>LOAN REJECTED</h2>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Prediction Metrics Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Approval Status</div>
+            <div class="metric-value {% if prediction.approval_status == 'Approved' %}text-success{% else %}text-danger{% endif %}">
+                {{ prediction.approval_status }}
+            </div>
+            <div class="metric-subtext">Classification Model</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Approval Probability</div>
+            <div class="metric-value">{{ "{:.1f}%".format(prediction.approval_probability * 100) }}</div>
+            <div class="metric-subtext">Confidence Score</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Default Probability</div>
+            <div class="metric-value {% if prediction.probability_of_default > 0.5 %}text-danger{% elif prediction.probability_of_default > 0.3 %}text-warning{% else %}text-success{% endif %}">
+                {{ "{:.2f}%".format(prediction.probability_of_default * 100) }}
+            </div>
+            <div class="metric-subtext">Risk Assessment</div>
+        </div>
+        {% if prediction.approval_status == 'Rejected' %}
+        <div class="metric-card">
+            <div class="metric-label">Safe Loan Amount</div>
+            <div class="metric-value text-primary">₹{{ "{:,.0f}".format(prediction.safe_loan_amount) }}</div>
+            <div class="metric-subtext">ML Predicted</div>
+        </div>
+        {% endif %}
+        <div class="metric-card">
+            <div class="metric-label">Calculated EMI</div>
+            <div class="metric-value">₹{{ "{:,.0f}".format(prediction.emi_amount) }}</div>
+            <div class="metric-subtext">Monthly Payment</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">EMI/Income Ratio</div>
+            <div class="metric-value {% if prediction.emi_income_ratio > 0.5 %}text-danger{% elif prediction.emi_income_ratio > 0.35 %}text-warning{% else %}text-success{% endif %}">
+                {{ "{:.1f}%".format(prediction.emi_income_ratio * 100) }}
+            </div>
+            <div class="metric-subtext">Affordability</div>
+        </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="detail-section">
+        <h3>Comparison: Requested vs Recommended</h3>
+        <div class="table-responsive">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Requested</th>
+                        <th>Recommended (ML)</th>
+                        <th>Difference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Loan Amount</td>
+                        <td>₹{{ "{:,.0f}".format(application.requested_loan_amount) }}</td>
+                        <td>
+                            {% if prediction.approval_status == "Rejected" %}
+                            ₹{{ "{:,.0f}".format(prediction.safe_loan_amount) }}
+                            {% else %}
+                            ₹0
+                             {% endif %}
+                        </td>
+                        <td>
+                       {% if prediction.status == "Rejected" %}
+                       {% set diff = prediction.safe_loan_amount - application.requested_loan_amount %}
+                       {% else %}
+                       {% set diff = 0 %}
+                        {% endif %}
+
+    <span class="{% if diff >= 0 %}text-success{% else %}text-danger{% endif %}">
+        {{ "{:+,.0f}".format(diff) }}
+    </span>
+                          </td>
+                    </tr>
+                    <tr>
+                        <td>Monthly EMI</td>
+                        <td>₹{{ "{:,.0f}".format(application.emi_amount) }}</td>
+                        <td>₹{{ "{:,.0f}".format(prediction.emi_amount) }}</td>
+                        <td>
+                            {% set diff_emi = prediction.emi_amount - application.emi_amount %}
+                            <span class="{% if diff_emi <= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ "{:+,.0f}".format(diff_emi) }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SHAP Explanations -->
+    {% if shap_explanation %}
+    <div class="detail-section">
+        <h3>🔍 AI Explainability (SHAP Analysis)</h3>
+        <p class="section-description">
+            SHAP (SHapley Additive exPlanations) values show how each feature contributed to the prediction.
+            Positive values push towards approval, negative values push towards rejection.
+        </p>
+
+        {% if shap_summary %}
+        <div class="shap-summary-box">
+            <h4>Summary</h4>
+            <p>{{ shap_summary.summary_text }}</p>
+        </div>
+
+        <div class="shap-features-grid">
+            {% if shap_summary.top_positive %}
+            <div class="features-column">
+                <h4 class="text-success">✓ Positive Contributors</h4>
+                <ul class="feature-impact-list">
+                    {% for feature in shap_summary.top_positive[:5] %}
+                    <li class="feature-impact-item positive">
+                        <strong>{{ feature.name }}</strong>
+                        <span class="feature-value">+{{ "%.4f"|format(feature.value) }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if shap_summary.top_negative %}
+            <div class="features-column">
+                <h4 class="text-danger">✗ Negative Contributors</h4>
+                <ul class="feature-impact-list">
+                    {% for feature in shap_summary.top_negative[:5] %}
+                    <li class="feature-impact-item negative">
+                        <strong>{{ feature.name }}</strong>
+                        <span class="feature-value">{{ "%.4f"|format(feature.value) }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- SHAP Visualizations -->
+        {% if shap_explanation.waterfall_plot %}
+        <div class="shap-plot-container">
+            <h4>Feature Impact Waterfall</h4>
+            <p>Shows top 10 features and their impact on the prediction</p>
+            <img src="data:image/png;base64,{{ shap_explanation.waterfall_plot }}" alt="SHAP Waterfall Plot">
+        </div>
+        {% endif %}
+
+        {% if shap_explanation.importance_plot %}
+        <div class="shap-plot-container">
+            <h4>Feature Importance</h4>
+            <p>Absolute importance of top features in the decision</p>
+            <img src="data:image/png;base64,{{ shap_explanation.importance_plot }}" alt="SHAP Importance Plot">
+        </div>
+        {% endif %}
+
+        {% if shap_explanation.force_plot_html %}
+        <div class="shap-plot-container">
+            <h4>Force Plot</h4>
+            <p>Interactive visualization of feature contributions</p>
+            <div id="shapForceplot">
+                {{ shap_explanation.force_plot_html|safe }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Recommendation Box -->
+    <div class="recommendation-box">
+        <h3>💡 Final Recommendation</h3>
+        {% if prediction.approval_status == 'Approved' %}
+        <p>
+            <strong>Approved for ₹{{ "{:,.0f}".format(application.requested_loan_amount) }}</strong>
+        </p>
+        <p>
+            The applicant has been approved for the requested loan amount. 
+            The EMI of ₹{{ "{:,.0f}".format(prediction.emi_amount) }} is sustainable given their 
+            monthly income of ₹{{ "{:,.0f}".format(application.monthly_income) }}.
+        </p>
+        {% else %}
+        <p>
+            <strong>Rejected for requested amount</strong>
+        </p>
+        <p>
+            The applicant is not eligible for the requested amount of ₹{{ "{:,.0f}".format(application.requested_loan_amount) }}.
+            However, based on our ML analysis, they may be eligible for ₹{{ "{:,.0f}".format(prediction.safe_loan_amount) }}.
+        </p>
+        <p>
+            Recommend the applicant to reapply with the safe loan amount or work on improving their credit profile.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary btn-large">
+            ← Back to Dashboard
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary btn-large">
+            🖨️ Print Results
+        </button>
+    </div>
+
+    <div class="result-saved-message">
+        <p>✓ Results have been saved and sent to the user</p>
+    </div>
+</div>
+{% endblock %}

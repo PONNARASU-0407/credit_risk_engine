@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Check Status - Credit Risk Engine{% endblock %}
+
+{% block content %}
+<div class="container">
+
+<div class="page-header">
+<h1>Check Application Status</h1>
+<p>Enter your Application ID to check the status</p>
+</div>
+
+<div class="status-check-container">
+<form method="POST" action="{{ url_for('check_status') }}" class="status-form">
+
+<div class="form-group">
+<label for="application_id">Application ID</label>
+<input type="text"
+id="application_id"
+name="application_id"
+required
+class="form-control"
+placeholder="e.g., APP20241201..."
+autofocus>
+</div>
+
+<button type="submit" class="btn btn-primary">
+Check Status
+</button>
+
+</form>
+</div>
+
+
+{% if result %}
+<div class="result-container">
+
+
+<!-- ================== PENDING ================== -->
+
+{% if result.status == 'Pending' %}
+
+<div class="status-card status-pending">
+
+<div class="status-icon">⏳</div>
+
+<h2>Application Pending</h2>
+
+<p>{{ result.message }}</p>
+
+<p>
+Our team is reviewing your application. You will be notified once the
+assessment is complete.
+</p>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- ================== APPROVED ================== -->
+
+{% if result.status == 'Approved' %}
+
+<div class="status-card status-approved">
+
+<div class="status-icon">✅</div>
+
+<h2>Congratulations! Loan Approved</h2>
+
+<p><strong>Application ID:</strong> {{ result.application_id }}</p>
+
+
+<div class="result-details">
+
+<div class="detail-grid">
+
+<div class="detail-item">
+<span class="detail-label">Loan Type</span>
+<span class="detail-value">{{ result.loan_type }}</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">Requested Amount</span>
+<span class="detail-value">
+₹{{ "{:,.2f}".format(result.requested_amount) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">Safe Loan Amount</span>
+<span class="detail-value highlight">
+₹{{ "{:,.2f}".format(result.safe_loan_amount) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">Monthly EMI</span>
+<span class="detail-value">
+₹{{ "{:,.2f}".format(result.emi_amount) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">EMI to Income Ratio</span>
+<span class="detail-value">
+{{ "{:.2f}%".format(result.emi_income_ratio * 100) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">Default Risk</span>
+<span class="detail-value">
+{{ "{:.2f}%".format(result.probability_of_default * 100) }}
+</span>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- ================== SHAP EXPLANATION ================== -->
+
+{% if result.shap_summary %}
+
+<div class="explanation-box">
+
+<h3>🔍 AI Decision Explanation</h3>
+
+
+<div class="explanation-grid">
+
+<!-- Positive Factors -->
+
+<div class="positive-factors">
+
+<h4 style="color:green;">✔ Positive Factors</h4>
+
+{% if result.shap_summary.top_positive %}
+
+<ul>
+
+{% for f in result.shap_summary.top_positive %}
+
+<li>
+
+<strong>{{ f.name }}</strong>
+
+(Impact: {{ "%.3f"|format(f.value|float) }})
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+{% endif %}
+
+</div>
+
+
+
+<!-- Negative Factors -->
+
+<div class="negative-factors">
+
+<h4 style="color:red;">✘ Negative Factors</h4>
+
+{% if result.shap_summary.top_negative %}
+
+<ul>
+
+{% for f in result.shap_summary.top_negative %}
+
+<li>
+
+<strong>{{ f.name }}</strong>
+
+(Impact: {{ "%.3f"|format(f.value|float) }})
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+{% endif %}
+
+</div>
+
+</div>
+
+
+<div class="ai-summary">
+
+<p>
+
+<strong>Summary:</strong>
+
+{{ result.shap_summary.summary_text }}
+
+</p>
+
+</div>
+
+</div>
+
+{% endif %}
+
+
+
+<div class="action-buttons">
+
+<a href="{{ url_for('download_pdf', application_id=result.application_id) }}"
+class="btn btn-primary">
+📄 Download PDF Report
+</a>
+
+<a href="{{ url_for('user_dashboard') }}"
+class="btn btn-secondary">
+Back to Dashboard
+</a>
+
+</div>
+
+</div>
+
+{% endif %}
+
+
+
+
+<!-- ================== REJECTED ================== -->
+
+{% if result.status == 'Rejected' %}
+
+<div class="status-card status-rejected">
+
+<div class="status-icon">❌</div>
+
+<h2>Loan Application Rejected</h2>
+
+<p><strong>Application ID:</strong> {{ result.application_id }}</p>
+
+<p>
+Unfortunately, your loan application for the requested amount has been rejected
+based on our assessment.
+</p>
+
+
+
+<div class="result-details">
+
+<div class="detail-grid">
+
+<div class="detail-item">
+<span class="detail-label">Loan Type</span>
+<span class="detail-value">{{ result.loan_type }}</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">Requested Amount</span>
+<span class="detail-value">
+₹{{ "{:,.2f}".format(result.requested_amount) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">Recommended Safe Amount</span>
+<span class="detail-value highlight">
+₹{{ "{:,.2f}".format(result.safe_loan_amount) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">EMI for Safe Amount</span>
+<span class="detail-value">
+₹{{ "{:,.2f}".format(result.emi_amount) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">EMI to Income Ratio</span>
+<span class="detail-value">
+{{ "{:.2f}%".format(result.emi_income_ratio * 100) }}
+</span>
+</div>
+
+<div class="detail-item">
+<span class="detail-label">Default Risk</span>
+<span class="detail-value">
+{{ "{:.2f}%".format(result.probability_of_default * 100) }}
+</span>
+</div>
+
+</div>
+
+</div>
+
+
+
+{% if result.shap_summary %}
+
+<div class="explanation-box">
+
+<h3>🔍 AI Decision Explanation</h3>
+
+<div class="explanation-grid">
+
+<div class="positive-factors">
+
+<h4 style="color:green;">✔ Positive Factors</h4>
+
+<ul>
+
+{% for f in result.shap_summary.top_positive %}
+<li>
+<strong>{{ f.name }}</strong>
+(Impact: {{ "%.3f"|format(f.value|float) }})
+</li>
+{% endfor %}
+
+</ul>
+
+</div>
+
+
+
+<div class="negative-factors">
+
+<h4 style="color:red;">✘ Negative Factors</h4>
+
+<ul>
+
+{% for f in result.shap_summary.top_negative %}
+<li>
+<strong>{{ f.name }}</strong>
+(Impact: {{ "%.3f"|format(f.value|float) }})
+</li>
+{% endfor %}
+
+</ul>
+
+</div>
+
+</div>
+
+
+<p>
+
+<strong>Summary:</strong>
+
+{{ result.shap_summary.summary_text }}
+
+</p>
+
+</div>
+
+{% endif %}
+
+
+
+<div class="recommendation-box">
+
+<h3>💡 Recommendation</h3>
+
+<p>
+
+Based on our AI analysis, you may be eligible for a loan amount of
+
+<strong>
+₹{{ "{:,.2f}".format(result.safe_loan_amount) }}
+</strong>.
+
+</p>
+
+<p>
+
+Consider reapplying with this adjusted amount or work on improving
+your credit profile.
+
+</p>
+
+</div>
+
+
+
+<div class="action-buttons">
+
+<a href="{{ url_for('download_pdf', application_id=result.application_id) }}"
+class="btn btn-primary">
+📄 Download PDF Report
+</a>
+
+<a href="{{ url_for('apply_loan') }}"
+class="btn btn-success">
+Apply Again
+</a>
+
+<a href="{{ url_for('user_dashboard') }}"
+class="btn btn-secondary">
+Back to Dashboard
+</a>
+
+</div>
+
+</div>
+
+{% endif %}
+
+
+</div>
+{% endif %}
+
+</div>
+
+{% endblock %}

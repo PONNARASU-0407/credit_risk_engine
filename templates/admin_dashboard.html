@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Credit Risk Engine{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header admin-header">
+        <h1>🔧 Admin Dashboard</h1>
+        <p>Review and process loan applications</p>
+    </div>
+
+    {% if not models_loaded %}
+    <div class="alert alert-warning">
+        <strong>⚠️ Warning:</strong> Machine learning models not found! Please run the training script first.
+        <pre>python train_models.py</pre>
+    </div>
+    {% endif %}
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-content">
+                <h3>{{ applications|length }}</h3>
+                <p>Pending Applications</p>
+            </div>
+        </div>
+    <div class="admin-search">
+    <h2>🔎 Check Any Application</h2>
+
+    <form method="POST" action="{{ url_for('admin_check_status') }}">
+        <div style="display:flex; gap:10px;">
+            <input 
+                type="text" 
+                name="application_id" 
+                placeholder="Enter Application ID"
+                required
+                class="form-control"
+            >
+            <button type="submit" class="btn btn-primary">
+                Check Status
+            </button>
+        </div>
+    </form>
+</div>
+        <div class="stat-card">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-content">
+                <h3>{% if models_loaded %}Ready{% else %}Not Ready{% endif %}</h3>
+                <p>ML Models Status</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>3</h3>
+                <p>Prediction Models</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="applications-section">
+        <h2>Pending Loan Applications</h2>
+        
+        {% if applications %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Application ID</th>
+                        <th>Username</th>
+                        <th>Loan Type</th>
+                        <th>Requested Amount</th>
+                        <th>Monthly Income</th>
+                        <th>Credit Score</th>
+                        <th>CIBIL Score</th>
+                        <th>Submission Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td><code>{{ app.application_id }}</code></td>
+                        <td>{{ app.username }}</td>
+                        <td><span class="badge badge-{{ app.loan_type.lower() }}">{{ app.loan_type }}</span></td>
+                        <td>₹{{ "{:,.2f}".format(app.requested_loan_amount) }}</td>
+                        <td>₹{{ "{:,.2f}".format(app.monthly_income) }}</td>
+                        <td>
+                            <span class="score-badge {% if app.credit_score >= 700 %}score-good{% elif app.credit_score >= 600 %}score-fair{% else %}score-poor{% endif %}">
+                                {{ app.credit_score }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="score-badge {% if app.cibil_score >= 750 %}score-good{% elif app.cibil_score >= 650 %}score-fair{% else %}score-poor{% endif %}">
+                                {{ app.cibil_score }}
+                            </span>
+                        </td>
+                        <td>{{ app.submission_date }}</td>
+                        <td>
+                            {% if models_loaded %}
+                            <a href="{{ url_for('admin_predict', application_id=app.application_id) }}" 
+                               class="btn btn-sm btn-primary">
+                                🎯 Predict
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-secondary" disabled title="Models not loaded">
+                                Predict
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>📭 No pending applications</p>
+            <p>All applications have been processed</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="model-info">
+        <h3>ℹ️ Model Information</h3>
+        <div class="info-grid">
+            <div class="info-card">
+                <h4>Approval Model</h4>
+                <p>LightGBM Classifier for loan approval prediction</p>
+            </div>
+            <div class="info-card">
+                <h4>Default Probability</h4>
+                <p>Regression model for default risk assessment</p>
+            </div>
+            <div class="info-card">
+                <h4>Safe Loan Amount</h4>
+                <p>ML-predicted optimal loan amount</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

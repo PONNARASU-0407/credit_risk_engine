@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - Credit Risk Engine{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>Welcome, {{ username }}!</h1>
+        <p>Manage your loan applications</p>
+    </div>
+
+    <div class="dashboard-actions">
+        <a href="{{ url_for('apply_loan') }}" class="btn btn-primary">
+            <span class="btn-icon">➕</span> Apply for New Loan
+        </a>
+        <a href="{{ url_for('check_status') }}" class="btn btn-secondary">
+            <span class="btn-icon">🔍</span> Check Application Status
+        </a>
+    </div>
+
+    <div class="applications-section">
+        <h2>Your Applications</h2>
+        
+        {% if applications %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Application ID</th>
+                        <th>Loan Type</th>
+                        <th>Requested Amount</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td><code>{{ app.application_id }}</code></td>
+                        <td>{{ app.loan_type }}</td>
+                        <td>₹{{ "{:,.2f}".format(app.requested_loan_amount) }}</td>
+                        <td>{{ app.submission_date }}</td>
+                        <td>
+                            <span class="status-badge status-{{ app.status.lower() }}">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('check_status') }}" style="display: inline;">
+                                <input type="hidden" name="application_id" value="{{ app.application_id }}">
+                                <button type="submit" class="btn btn-sm btn-info">View Details</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>📝 No applications found</p>
+            <p>Start by applying for a loan</p>
+            <a href="{{ url_for('apply_loan') }}" class="btn btn-primary">Apply Now</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

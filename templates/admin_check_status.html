@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+.page-container{
+    max-width:700px;
+    margin:auto;
+    margin-top:40px;
+}
+
+.search-card{
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.search-form{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.search-input{
+    flex:1;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:15px;
+}
+
+.search-input:focus{
+    outline:none;
+    border-color:#007bff;
+    box-shadow:0 0 5px rgba(0,123,255,0.3);
+}
+
+.search-btn{
+    padding:12px 20px;
+    border:none;
+    border-radius:8px;
+    background:#007bff;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+}
+
+.search-btn:hover{
+    background:#0056b3;
+}
+
+.result-card{
+    margin-top:25px;
+    background:#f8f9fa;
+    padding:20px;
+    border-radius:10px;
+}
+
+.status-approved{
+    color:green;
+    font-weight:bold;
+}
+
+.status-rejected{
+    color:red;
+    font-weight:bold;
+}
+
+.status-pending{
+    color:orange;
+    font-weight:bold;
+}
+
+</style>
+
+
+<div class="page-container">
+
+    <div class="search-card">
+        <h2>🔎 Admin Application Status</h2>
+
+        <form method="POST" class="search-form">
+            <input 
+                type="text" 
+                name="application_id" 
+                placeholder="Enter Application ID" 
+                required
+                class="search-input"
+            >
+
+            <button type="submit" class="search-btn">
+                Check
+            </button>
+        </form>
+    </div>
+
+
+    {% if result %}
+    <div class="result-card">
+
+        <h3>Application Result</h3>
+
+        <p><b>Application ID:</b> {{ result.application_id }}</p>
+        <p><b>User:</b> {{ result.username }}</p>
+
+        <p>
+            <b>Status:</b> 
+            <span class="
+                {% if result.status == 'Approved' %}
+                status-approved
+                {% elif result.status == 'Rejected' %}
+                status-rejected
+                {% else %}
+                status-pending
+                {% endif %}
+            ">
+            {{ result.status }}
+            </span>
+        </p>
+
+        {% if result.status != 'Pending' %}
+        <hr>
+
+        <p><b>Probability of Default:</b> {{ result.probability_of_default }}</p>
+        <p><b>Safe Loan Amount:</b> ₹{{ result.safe_loan_amount }}</p>
+        <p><b>EMI:</b> ₹{{ result.emi_amount }}</p>
+
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

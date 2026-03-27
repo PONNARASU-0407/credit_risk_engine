@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Process Application - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>📋 Application Review</h1>
+        <p>Application ID: <code>{{ application_id }}</code></p>
+    </div>
+
+    <div class="application-details-container">
+        <div class="detail-section">
+            <h3>Applicant Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Username</span>
+                    <span class="detail-value">{{ application.username }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Age</span>
+                    <span class="detail-value">{{ application.age }} years</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Gender</span>
+                    <span class="detail-value">{{ application.gender }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">City Type</span>
+                    <span class="detail-value">{{ application.city_type }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Education</span>
+                    <span class="detail-value">{{ application.education_level }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Dependents</span>
+                    <span class="detail-value">{{ application.dependents }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Employment Details</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Employment Type</span>
+                    <span class="detail-value">{{ application.employment_type }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Employment Years</span>
+                    <span class="detail-value">{{ application.employment_years }} years</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Business Vintage</span>
+                    <span class="detail-value">{{ application.business_vintage_years }} years</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Financial Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Annual Income</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.annual_income) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Monthly Income</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.monthly_income) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Credit Score</span>
+                    <span class="detail-value score-badge {% if application.credit_score >= 700 %}score-good{% elif application.credit_score >= 600 %}score-fair{% else %}score-poor{% endif %}">
+                        {{ application.credit_score }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">CIBIL Score</span>
+                    <span class="detail-value score-badge {% if application.cibil_score >= 750 %}score-good{% elif application.cibil_score >= 650 %}score-fair{% else %}score-poor{% endif %}">
+                        {{ application.cibil_score }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Loan Details</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Loan Type</span>
+                    <span class="detail-value"><strong>{{ application.loan_type }}</strong></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Requested Amount</span>
+                    <span class="detail-value"><strong>₹{{ "{:,.2f}".format(application.requested_loan_amount) }}</strong></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Tenure</span>
+                    <span class="detail-value">{{ application.loan_tenure_months }} months</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Interest Rate</span>
+                    <span class="detail-value">{{ application.interest_rate }}%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Calculated EMI</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.emi_amount) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">EMI/Income Ratio</span>
+                    <span class="detail-value">{{ "{:.2f}%".format(application.emi_income_ratio * 100) }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if application.loan_type == 'Home' %}
+        <div class="detail-section">
+            <h3>Home Loan Specific</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Property Value</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.property_value) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Property Location</span>
+                    <span class="detail-value">{{ application.property_location }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Down Payment</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.down_payment) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Property Type</span>
+                    <span class="detail-value">{{ application.property_type }}</span>
+                </div>
+            </div>
+        </div>
+        {% elif application.loan_type == 'Gold' %}
+        <div class="detail-section">
+            <h3>Gold Loan Specific</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Gold Weight</span>
+                    <span class="detail-value">{{ application.gold_weight }} grams</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Gold Purity</span>
+                    <span class="detail-value">{{ application.gold_purity }} karats</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Market Value</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.gold_market_value) }}</span>
+                </div>
+            </div>
+        </div>
+        {% elif application.loan_type == 'Business' %}
+        <div class="detail-section">
+            <h3>Business Loan Specific</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Business Turnover</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.business_turnover) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Years in Business</span>
+                    <span class="detail-value">{{ application.years_in_business }} years</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Business Type</span>
+                    <span class="detail-value">{{ application.business_type }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">GST Number</span>
+                    <span class="detail-value">{{ application.gst_number }}</span>
+                </div>
+            </div>
+        </div>
+        {% elif application.loan_type == 'Educational' %}
+        <div class="detail-section">
+            <h3>Educational Loan Specific</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Course Fee</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.course_fee) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">College Tier</span>
+                    <span class="detail-value">{{ application.college }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Course Duration</span>
+                    <span class="detail-value">{{ application.course_duration }} months</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Co-applicant Income</span>
+                    <span class="detail-value">₹{{ "{:,.2f}".format(application.coapplicant_income) }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="action-section">
+            <h3>Process Application</h3>
+            <p>Click the button below to run AI predictions on this application</p>
+            <form method="POST" action="{{ url_for('admin_predict', application_id=application_id) }}">
+                <button type="submit" class="btn btn-primary btn-large">
+                    🤖 Run ML Predictions
+                </button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary btn-large">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

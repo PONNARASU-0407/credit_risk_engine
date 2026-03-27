@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}User Login - Credit Risk Engine{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">User Login</h2>
+        <p class="auth-subtitle">Login to apply for loans and check application status</p>
+        
+        <form method="POST" action="{{ url_for('user_login') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required class="form-control" placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required class="form-control" placeholder="Enter your password">
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{{ url_for('index') }}">Contact Admin</a></p>
+            <p><a href="{{ url_for('admin_login') }}">Admin Login</a></p>
+        </div>
+        
+        <div class="demo-credentials">
+            <p><strong>Demo Credentials:</strong></p>
+            <p>Username: <code>demo</code> | Password: <code>demo123</code></p>
+            <p>Username: <code>user1</code> | Password: <code>pass123</code></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
