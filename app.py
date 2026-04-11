@@ -86,7 +86,7 @@ def load_models():
         print(f"Error loading models: {e}")
         return False
 
-def make_predictions(X_processed, loan_type, requested_amount, tenure, interest_rate, monthly_income):
+def make_predictions(X_processed, loan_type,age, requested_amount, tenure, interest_rate, monthly_income,emi_amount):
     """
     Make predictions using all three models
     
@@ -110,7 +110,10 @@ def make_predictions(X_processed, loan_type, requested_amount, tenure, interest_
     if approval_status == 'Approved':
         loan_amount_for_emi = requested_amount
     else:
-        loan_amount_for_emi = safe_amount
+        if (safe_amount > monthly_income * tenure) or (emi_amount > monthly_income):
+            loan_amount_for_emi = monthly_income * tenure
+        else:
+            loan_amount_for_emi = safe_amount
     
     emi = calculate_emi(loan_amount_for_emi, interest_rate, tenure)
     emi_ratio = calculate_emi_income_ratio(emi, monthly_income)
@@ -535,6 +538,7 @@ def admin_predict(application_id):
         try:
 
             loan_type = app_data['loan_type']
+            
 
             # Prepare form data
             form_data = {}
@@ -553,10 +557,12 @@ def admin_predict(application_id):
             predictions = make_predictions(
                 X_processed,
                 loan_type,
+                app_data['age'],
                 app_data['requested_loan_amount'],
                 app_data['loan_tenure_months'],
                 app_data['interest_rate'],
-                app_data['monthly_income']
+                app_data['monthly_income'],
+                app_data['emi_amount']
             )
 
             # Generate SHAP explanations
